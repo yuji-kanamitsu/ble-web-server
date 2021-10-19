@@ -1,0 +1,10 @@
+version: '3'
+services:
+  app:
+    build: . # Dockerfileがあるディレクトリ指定
+    tty: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/go/src/docker-test # マウントディレクトリ
+

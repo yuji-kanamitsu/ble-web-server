@@ -1,8 +1,8 @@
 package main
 
 import (
-	// "fmt"
 	// "net/http"
+	"fmt"
 	"strconv"
 
 	"./model"
@@ -17,7 +17,7 @@ func main() {
 	dbInit()
 
 	r.GET("/helloworld", helloWorld)
-	r.POST("/create", createSensingData)
+	r.POST("/create", createPostData)
 	r.GET("/read/", readAllDB)
 	r.GET("/read/:id", readOneDB)
 	r.Run(":8080")
@@ -25,47 +25,48 @@ func main() {
 
 // DB初期化
 func dbInit() {
-	db, err := gorm.Open("sqlite3", "model/test_db.sqlite3")
+	db, err := gorm.Open("sqlite3", "model/ble_db.sqlite3")
 	if err != nil {
 		panic("データベース開けず!(dbInit)")
 	}
-	db.AutoMigrate(&model.SensingTable{})
+	db.AutoMigrate(&model.SensorTable{})
+
 	defer db.Close()
 }
 
 // DB追加
-func dbInsert(timestamp int, latitude float64, longitude float64) {
-	db, err := gorm.Open("sqlite3", "model/test_db.sqlite3")
+func dbInsert(key string, meta model.Meta, body []model.Body) {
+	db, err := gorm.Open("sqlite3", "model/ble_db.sqlite3")
 	if err != nil {
 		panic("データベース開けず!(dbInsert)")
 	}
-	db.Create(&model.SensingTable{
-		Timestamp: timestamp,
-		Latitude:  latitude,
-		Longitude: longitude,
+	db.Create(&model.SensorTable{
+		Key:  key,
+		Meta: meta,
+		Body: body,
 	})
 	defer db.Close()
 }
 
 // DB全取得
-func dbGetAll() []model.SensingTable {
-	db, err := gorm.Open("sqlite3", "model/test_db.sqlite3")
+func dbGetAll() []model.SensorTable {
+	db, err := gorm.Open("sqlite3", "model/ble_db.sqlite3")
 	if err != nil {
 		panic("データベース開けず!(dbGetAll())")
 	}
-	var all []model.SensingTable
+	var all []model.SensorTable
 	db.Order("id desc").Find(&all)
 	db.Close()
 	return all
 }
 
 // DB一つ取得
-func dbGetOne(id int) model.SensingTable {
-	db, err := gorm.Open("sqlite3", "model/test_db.sqlite3")
+func dbGetOne(id int) model.SensorTable {
+	db, err := gorm.Open("sqlite3", "model/ble_db.sqlite3")
 	if err != nil {
 		panic("データベース開けず!(dbGetOne())")
 	}
-	var one model.SensingTable
+	var one model.SensorTable
 	db.First(&one, id)
 	db.Close()
 	return one
@@ -79,14 +80,19 @@ func helloWorld(c *gin.Context) {
 }
 
 // createSensingData : センシングデータを登録
-func createSensingData(c *gin.Context) {
-	var req model.SensingData
+func createPostData(c *gin.Context) {
+	var req model.PostData
 	c.BindJSON(&req)
-	// mess := model.SensingData{}
-	dbInsert(req.Timestamp, req.Latitude, req.Longitude)
+	// mess := model.SensorData{}
+	// dbInsert(req.Key, req.Meta, req.Body)
+	fmt.Println(req.Key)
+	fmt.Println(req.Meta)
+	fmt.Println(req.Body)
 	c.JSON(200, gin.H{
-		"status":    200,
-		"timestamp": req.Timestamp,
+		"status": 200,
+		"key":    req.Key,
+		"meta":   req.Meta,
+		"body":   req.Body,
 	})
 }
 

@@ -1,16 +1,34 @@
 package model
 
-type SensingData struct {
-	// ID        string  `json:"id"`
-	Timestamp int     `json:"timestamp"`
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
+type PostData struct {
+	Key  string `json:"key"`
+	Meta Meta
+	Body []Body
 }
 
-// Sensing Table
-type SensingTable struct {
-	ID        int `gorm:"AUTO_INCREMENT"`
-	Timestamp int
-	Latitude  float64
-	Longitude float64
+type Meta struct {
+	Area     int    `json:"area"`
+	Type     int    `json:"type"`
+	SensorID string `json:"sensor_id"`
+	DataTime int    `json:"data_time"`
+}
+
+type Body struct {
+	T   int     `json:"t"`
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lng"`
+	Ble []Ble
+}
+
+type Ble struct {
+	Addr string `json:"addr"`
+	Rssi int    `json:"rssi"`
+}
+
+// SensorTable
+type SensorTable struct {
+	ID   int `gorm:"AUTO_INCREMENT"`
+	Key  string
+	Meta Meta
+	Body []Body
 }
